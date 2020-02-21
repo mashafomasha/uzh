@@ -6,7 +6,6 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -17,9 +16,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react"
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "react",
+    "typeRoots": [
+      "./@types",
+      "./node_modules/@types"
+    ],
+    "baseUrl": "."
   },
   "include": [
     "src"
-  ]
+  ],
 }
