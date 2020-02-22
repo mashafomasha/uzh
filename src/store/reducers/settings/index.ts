@@ -3,9 +3,9 @@ import { SettingsState } from 'store/state/settings';
 import { setRows, setColumns, setVelocity } from 'store/actions/settings';
 
 const initialSettingsState: SettingsState = {
-    rows: 60,
-    columns: 65,
-    velocity: 20,
+    rows: 15,
+    columns: 20,
+    velocity: 25,
 };
 
 const settings = createReducer(initialSettingsState)

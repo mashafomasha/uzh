@@ -1,59 +1,51 @@
 import * as React from 'react';
+import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
 import { settingsSelector } from 'store/selectors';
-import { SettingsState } from 'store/state/settings';
 import { setRows, setColumns, setVelocity } from 'store/actions/settings';
 import { Slider } from 'components/Slider';
+import { sliders, optionsBySliderId, SliderId } from './options';
 import './styles.css';
 
-type SettingsProps = SettingsState & typeof mapDispatchToProps;
+type SettingsProps = ReturnType<typeof mapStateToProps> &
+    ReturnType<typeof mapDispatchToProps>;
 
-const mapDispatchToProps = {
-    changeRowCount: setRows,
-    changeColumnsCount: setColumns,
-    changeVelocity: setVelocity,
-};
+const mapStateToProps = createSelector(settingsSelector, (valueById) => ({
+    valueById,
+}));
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+    onChange: (sliderId: SliderId, value: number) => {
+        switch (sliderId) {
+            case 'rows':
+                return dispatch(setRows(value));
+            case 'columns':
+                return dispatch(setColumns(value));
+            case 'velocity':
+                return dispatch(setVelocity(value));
+        }
+    },
+});
 
 export const Settings = connect(
-    settingsSelector,
+    mapStateToProps,
     mapDispatchToProps,
-)(
-    ({
-        rows,
-        columns,
-        velocity,
-        changeRowCount,
-        changeColumnsCount,
-        changeVelocity,
-    }: SettingsProps) => (
-        <div className="Settings">
-            <Slider
-                id="columns"
-                min={50}
-                max={100}
-                value={columns}
-                onChange={changeColumnsCount}
-                tooltipVisible
-                label="Число ячеек по горизонтали"
-            />
-            <Slider
-                id="rows"
-                min={50}
-                max={100}
-                value={rows}
-                onChange={changeRowCount}
-                tooltipVisible
-                label="Число ячеек по вертикали"
-            />
-            <Slider
-                id="velocity"
-                min={15}
-                max={60}
-                value={velocity}
-                onChange={changeVelocity}
-                tooltipVisible
-                label="Скорость движения"
-            />
-        </div>
-    ),
-);
+)(({ onChange, valueById }: SettingsProps) => (
+    <div className="Settings">
+        {sliders.map((sliderId) => {
+            const options = optionsBySliderId[sliderId];
+            const value = valueById[sliderId];
+
+            return (
+                <Slider
+                    id={sliderId}
+                    key={sliderId}
+                    value={value}
+                    onChange={(value) => onChange(sliderId, value)}
+                    {...options}
+                />
+            );
+        })}
+    </div>
+));
