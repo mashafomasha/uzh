@@ -27,7 +27,6 @@ export const Settings = connect(
         changeVelocity,
     }: SettingsProps) => (
         <div className="Settings">
-            <h3 className="Title">Настройки</h3>
             <Slider
                 id="columns"
                 min={50}

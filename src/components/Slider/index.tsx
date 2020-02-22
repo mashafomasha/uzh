@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Slider as ASlider } from 'antd';
 import { SliderProps, SliderValue } from 'antd/lib/slider';
+import './styles.css';
 
 type Props<T extends SliderValue> = Omit<SliderProps, 'onChange'> & {
     id: string;
@@ -34,13 +35,15 @@ export function Slider<T extends SliderValue>({
 
     return (
         <div className="Slider">
-            {label && <label htmlFor="slider">{label}</label>}
-            <ASlider
-                {...sliderProps}
-                id={id}
-                value={value}
-                onChange={handleChange}
-            />
+            {label && <label htmlFor={id}>{label}</label>}
+            <div className="Input">
+                <ASlider
+                    {...sliderProps}
+                    id={id}
+                    value={value}
+                    onChange={handleChange}
+                />
+            </div>
         </div>
     );
 }

@@ -1,0 +1,10 @@
+.Slider {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.Input {
+    flex-grow: 1;
+    max-width: 65%;
+}
