@@ -1,0 +1,10 @@
+.Settings {
+    display: flex;
+    flex-direction: column;
+    max-width: 50%;
+}
+
+.Title {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}

@@ -59,9 +59,7 @@ function getAdditionalModulePaths(options = {}) {
  *
  * @param {*} options
  */
-function getWebpackAliases(options = {}) {
-    const baseUrl = options.baseUrl;
-
+function getWebpackAliases({ baseUrl, paths: tsPaths } = {}) {
     if (!baseUrl) {
         return {};
     }
@@ -71,6 +69,21 @@ function getWebpackAliases(options = {}) {
     if (path.relative(paths.appPath, baseUrlResolved) === '') {
         return {
             src: paths.appSrc,
+            ...Object.entries(tsPaths).reduce(
+                (acc, [entryName, entryValue]) => {
+                    const key = entryName.replace('/*', '');
+                    const value = path.resolve(
+                        path.join(
+                            paths.appPath,
+                            entryValue[0].replace('/*', ''),
+                        ),
+                    );
+
+                    acc[key] = value;
+                    return acc;
+                },
+                {},
+            ),
         };
     }
 }
@@ -80,9 +93,7 @@ function getWebpackAliases(options = {}) {
  *
  * @param {*} options
  */
-function getJestAliases(options = {}) {
-    const baseUrl = options.baseUrl;
-
+function getJestAliases({ baseUrl, paths: tsPaths } = {}) {
     if (!baseUrl) {
         return {};
     }
@@ -92,6 +103,19 @@ function getJestAliases(options = {}) {
     if (path.relative(paths.appPath, baseUrlResolved) === '') {
         return {
             '^src/(.*)$': '<rootDir>/src/$1',
+            ...Object.entries(tsPaths).reduce(
+                (acc, [entryName, entryValue]) => {
+                    const key = `^${entryName.replace('/*', '/(.*)$')}`;
+                    const value = `<rootDir>/${entryValue[0].replace(
+                        '/*',
+                        '/$1',
+                    )}`;
+
+                    acc[key] = value;
+                    return acc;
+                },
+                {},
+            ),
         };
     }
 }
