@@ -22,6 +22,7 @@ export class CanvasRenderer extends React.Component<Props> {
         }
         this.canvas = this.canvasRef.current;
         this.canvasContext = this.canvas.getContext('2d');
+        this.paint();
     }
 
     componentDidUpdate() {
@@ -50,7 +51,7 @@ export class CanvasRenderer extends React.Component<Props> {
             fieldGridSize,
         } = this.props;
 
-        this.canvasContext!.fillStyle = 'red';
+        this.canvasContext!.fillStyle = '#f5222d';
 
         this.canvasContext!.fillRect(
             appleX,
@@ -63,7 +64,7 @@ export class CanvasRenderer extends React.Component<Props> {
     private drawSnake = () => {
         const { snakePoints, fieldGridSize } = this.props;
 
-        this.canvasContext!.fillStyle = 'green';
+        this.canvasContext!.fillStyle = '#1890ff';
 
         snakePoints.forEach(([cellX, cellY]) => {
             this.canvasContext!.fillRect(

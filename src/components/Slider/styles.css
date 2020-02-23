@@ -8,4 +8,5 @@
 .Input {
     flex-grow: 1;
     max-width: 65%;
+    margin-left: 15px;
 }

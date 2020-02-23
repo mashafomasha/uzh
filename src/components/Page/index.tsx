@@ -1,19 +1,36 @@
+import * as React from 'react';
 import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
 import { createSelector } from 'reselect';
-import { gameActiveSelector } from 'store/selectors';
-import { setActive, resetScore } from 'store/actions/game';
-import { View } from './view';
+import { Tabs } from 'antd';
+import { ErrorBoundary } from 'components/ErrorBoundary';
+import { GameTab } from 'components/GameTab';
+import { SettingsTab } from 'components/SettingsTab';
+import { gameActiveSelector } from 'store/selectors/game';
+import './styles.css';
 
-const mapStateToProps = createSelector(gameActiveSelector, (active) => ({
-    active,
+const { TabPane } = Tabs;
+
+type PageProps = {
+    isGameActive: boolean;
+};
+
+const mapStateToProps = createSelector(gameActiveSelector, (isGameActive) => ({
+    isGameActive,
 }));
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-    onStartGame: () => {
-        dispatch(resetScore());
-        dispatch(setActive(true));
-    },
-});
-
-export const Page = connect(mapStateToProps, mapDispatchToProps)(View);
+export const Page = connect(mapStateToProps)(
+    ({ isGameActive: disabled }: PageProps) => (
+        <main className="Page">
+            <ErrorBoundary>
+                <Tabs defaultActiveKey="1">
+                    <TabPane tab="Игра" key="1">
+                        <GameTab />
+                    </TabPane>
+                    <TabPane tab="Настройки" key="2" disabled={disabled}>
+                        <SettingsTab />
+                    </TabPane>
+                </Tabs>
+            </ErrorBoundary>
+        </main>
+    ),
+);

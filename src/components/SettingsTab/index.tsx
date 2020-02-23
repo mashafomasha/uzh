@@ -8,7 +8,7 @@ import { Slider } from 'components/Slider';
 import { sliders, optionsBySliderId, SliderId } from './options';
 import './styles.css';
 
-type SettingsProps = ReturnType<typeof mapStateToProps> &
+type SettingsTabProps = ReturnType<typeof mapStateToProps> &
     ReturnType<typeof mapDispatchToProps>;
 
 const mapStateToProps = createSelector(settingsSelector, (valueById) => ({
@@ -28,10 +28,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     },
 });
 
-export const Settings = connect(
+export const SettingsTab = connect(
     mapStateToProps,
     mapDispatchToProps,
-)(({ onChange, valueById }: SettingsProps) => (
+)(({ onChange, valueById }: SettingsTabProps) => (
     <div className="Settings">
         {sliders.map((sliderId) => {
             const options = optionsBySliderId[sliderId];

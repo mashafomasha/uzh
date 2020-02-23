@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 import { StateType } from 'typesafe-actions';
-import { State } from '../state';
+import { State } from 'store/state';
 import { settings } from './settings';
 import { game } from './game';
 

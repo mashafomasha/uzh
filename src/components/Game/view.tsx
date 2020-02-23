@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { CanvasRenderer } from './components/CanvasRenderer';
-import { FrameCalculator } from './components/FrameCalculator';
-import { KeyboardHandler } from './components/KeyboardHandler';
+import { CanvasRenderer } from '../CanvasRenderer';
+import { FrameCalculator } from '../FrameCalculator';
+import { KeyboardHandler } from '../KeyboardHandler';
 
 type Props = {
     active: boolean;

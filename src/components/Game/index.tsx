@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { createSelector } from 'reselect';
-import { setActive, icrementScore } from 'store/actions/game';
+import { setActive, icrementScore, setGameLost } from 'store/actions/game';
 import {
     gameActiveSelector,
     defaultFPSSelector,
@@ -26,7 +26,10 @@ const mapStateToProps = createSelector(
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
     onAppleEncounter: () => dispatch(icrementScore()),
-    onObstacleEncounter: () => dispatch(setActive(false)),
+    onObstacleEncounter: () => {
+        dispatch(setActive(false));
+        dispatch(setGameLost(true));
+    },
 });
 
 export const Game = connect(mapStateToProps, mapDispatchToProps)(View);

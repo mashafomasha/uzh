@@ -31,12 +31,7 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
     constructor(props: FrameProps) {
         super(props);
 
-        this.state = {
-            applePoint: this.generateRandomPoint(),
-            snakePoints: [this.generateRandomPoint()],
-
-            currentFramesCount: 0,
-        };
+        this.state = this.getBrandNewState();
     }
 
     componentDidUpdate(prevProps: FrameProps) {
@@ -50,6 +45,10 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
 
         if (prevProps.active && !active && this.reqAnimationFrameId) {
             cancelAnimationFrame(this.reqAnimationFrameId);
+
+            setTimeout(() => {
+                this.setState(this.getBrandNewState());
+            }, 0);
         }
 
         if (
@@ -57,10 +56,7 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
             prevProps.fieldHeigth !== fieldHeigth ||
             prevProps.fieldGridSize !== fieldGridSize
         ) {
-            this.setState({
-                applePoint: this.generateRandomPoint(),
-                snakePoints: [this.generateRandomPoint()],
-            });
+            this.setState(this.getBrandNewState());
         }
     }
 
@@ -69,6 +65,13 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
             cancelAnimationFrame(this.reqAnimationFrameId);
         }
     }
+
+    private getBrandNewState = () => ({
+        applePoint: this.generateRandomPoint(),
+        snakePoints: [this.generateRandomPoint()],
+
+        currentFramesCount: 0,
+    });
 
     private requestAnimationFrame = () => {
         const { currentFramesCount, snakePoints } = this.state;

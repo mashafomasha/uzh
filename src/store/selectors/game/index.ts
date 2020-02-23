@@ -11,6 +11,11 @@ export const gameActiveSelector = createSelector(
     ({ active }) => active,
 );
 
+export const gameLostSelector = createSelector(
+    gameSelector,
+    ({ lost }) => lost,
+);
+
 export const defaultFPSSelector = () => FPS;
 
 export const defaultGridSizeSelector = () => GRID_ZISE;

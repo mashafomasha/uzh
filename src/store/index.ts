@@ -7,7 +7,7 @@ let store: ReturnType<typeof configureStore> | undefined;
 export const getStore = () => store;
 
 export const configureStore = () => {
-    const resultStore = createStore(rootReducer, devToolsEnhancer({}));
+    const resultStore = createStore(rootReducer, devToolsEnhancer({}) as any);
 
     store = resultStore;
 
