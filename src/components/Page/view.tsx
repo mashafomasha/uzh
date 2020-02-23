@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { Result, Tabs } from 'antd';
+import { Result, Tabs, Button } from 'antd';
 import { Settings } from 'components/Settings';
 import { Game } from 'components/Game';
 import './styles.css';
 
 type Props = {
-    settingsDisabled: boolean;
+    active: boolean;
+    onStartGame: () => void;
 };
 
 type State = {
@@ -23,13 +24,13 @@ export class View extends React.Component<Props, State> {
         };
     }
 
-    componentDidCatch(error: Error) {
+    componentDidCatch() {
         this.setState({ error: true });
     }
 
     render() {
         const { error } = this.state;
-        const { settingsDisabled } = this.props;
+        const { active, onStartGame } = this.props;
 
         return (
             <main className="Page">
@@ -42,13 +43,18 @@ export class View extends React.Component<Props, State> {
                 ) : (
                     <Tabs defaultActiveKey="1">
                         <TabPane tab="Игра" key="1">
-                            <Game />
+                            <Button
+                                type="primary"
+                                disabled={active}
+                                onClick={onStartGame}
+                            >
+                                Играть
+                            </Button>
+                            <div className="Game">
+                                <Game />
+                            </div>
                         </TabPane>
-                        <TabPane
-                            tab="Настройки"
-                            key="2"
-                            disabled={settingsDisabled}
-                        >
+                        <TabPane tab="Настройки" key="2" disabled={active}>
                             <Settings />
                         </TabPane>
                     </Tabs>

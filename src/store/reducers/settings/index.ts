@@ -5,7 +5,7 @@ import { setRows, setColumns, setVelocity } from 'store/actions/settings';
 const initialSettingsState: SettingsState = {
     rows: 15,
     columns: 20,
-    velocity: 25,
+    velocity: 10,
 };
 
 const settings = createReducer(initialSettingsState)

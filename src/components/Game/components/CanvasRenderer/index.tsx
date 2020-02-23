@@ -3,18 +3,15 @@ import { Point } from 'types/point';
 import './styles.css';
 
 type Props = {
-    columns: number;
-    rows: number;
-    gridSize: number;
+    fieldWidth: number;
+    fieldHeigth: number;
+    fieldGridSize: number;
 
-    headDeltaX: number;
-    headDeltaY: number;
-
-    snake: Point[];
-    apple: Point;
+    applePoint: Point;
+    snakePoints: Point[];
 };
 
-export class GameCanvas extends React.Component<Props> {
+export class CanvasRenderer extends React.Component<Props> {
     private canvas: HTMLCanvasElement | null = null;
     private canvasContext: CanvasRenderingContext2D | null = null;
     public canvasRef = React.createRef<HTMLCanvasElement>();
@@ -49,37 +46,45 @@ export class GameCanvas extends React.Component<Props> {
 
     private drawApple = () => {
         const {
-            apple: [appleX, appleY],
-            gridSize,
+            applePoint: [appleX, appleY],
+            fieldGridSize,
         } = this.props;
 
         this.canvasContext!.fillStyle = 'red';
 
-        this.canvasContext!.fillRect(appleX, appleY, gridSize, gridSize);
+        this.canvasContext!.fillRect(
+            appleX,
+            appleY,
+            fieldGridSize,
+            fieldGridSize,
+        );
     };
 
     private drawSnake = () => {
-        const { snake, gridSize } = this.props;
+        const { snakePoints, fieldGridSize } = this.props;
 
         this.canvasContext!.fillStyle = 'green';
 
-        snake.forEach(([cellX, cellY]) => {
-            this.canvasContext!.fillRect(cellX, cellY, gridSize, gridSize);
+        snakePoints.forEach(([cellX, cellY]) => {
+            this.canvasContext!.fillRect(
+                cellX,
+                cellY,
+                fieldGridSize,
+                fieldGridSize,
+            );
         });
     };
 
     render() {
-        const { columns, rows, gridSize } = this.props;
+        const { fieldWidth, fieldHeigth } = this.props;
 
         return (
             <canvas
                 className="Canvas"
-                width={columns * gridSize}
-                height={rows * gridSize}
+                width={fieldWidth}
+                height={fieldHeigth}
                 ref={this.canvasRef}
-            >
-                У вас старый браузер ¯\_(ツ)_/¯
-            </canvas>
+            ></canvas>
         );
     }
 }

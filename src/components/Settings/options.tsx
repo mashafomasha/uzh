@@ -30,9 +30,9 @@ export const optionsBySliderId: {
         ),
     },
     velocity: {
-        min: 15,
+        min: 5,
         max: 60,
-        marks: getMarks(15, 60),
+        marks: getMarks(5, 60),
         label: (
             <>
                 Скорость движения, <small>кадров в секунду</small>

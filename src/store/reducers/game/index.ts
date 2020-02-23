@@ -1,6 +1,6 @@
 import { createReducer } from 'typesafe-actions';
 import { GameState } from 'store/state/game';
-import { setActive, setScore } from 'store/actions/game';
+import { setActive, icrementScore, resetScore } from 'store/actions/game';
 
 const initialGameState: GameState = {
     active: false,
@@ -12,9 +12,13 @@ const game = createReducer(initialGameState)
         ...state,
         active,
     }))
-    .handleAction(setScore, (state, { payload: score }) => ({
+    .handleAction(icrementScore, (state) => ({
         ...state,
-        score,
+        score: state.score + 1,
+    }))
+    .handleAction(resetScore, (state) => ({
+        ...state,
+        score: 0,
     }));
 
 export { game };
