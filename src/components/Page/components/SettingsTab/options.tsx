@@ -10,9 +10,9 @@ export const optionsBySliderId: {
     [key in SliderId]: SliderProps<number>;
 } = {
     columns: {
-        min: 10,
+        min: 15,
         max: 40,
-        marks: getMarks(10, 40),
+        marks: getMarks(15, 40),
         label: (
             <>
                 Число ячеек по горизонтали, <small>штук</small>
@@ -20,9 +20,9 @@ export const optionsBySliderId: {
         ),
     },
     rows: {
-        min: 10,
-        max: 40,
-        marks: getMarks(10, 40),
+        min: 15,
+        max: 25,
+        marks: getMarks(15, 25),
         label: (
             <>
                 Число ячеек по вертикали, <small>штук</small>

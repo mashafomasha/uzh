@@ -2,13 +2,13 @@ import * as React from 'react';
 import { KEY_CODES } from './keycodes';
 
 type HandlerState = {
-    deltaX: number;
-    deltaY: number;
+    speedX: number;
+    speedY: number;
 };
 
 type HandlerProps = {
     active: boolean;
-    fieldGridSize: number;
+    gridSize: number;
     children: (props: HandlerState) => React.ReactNode;
 };
 
@@ -20,8 +20,8 @@ export class KeyboardHandler extends React.Component<
         super(props);
 
         this.state = {
-            deltaX: props.fieldGridSize,
-            deltaY: 0,
+            speedX: props.gridSize,
+            speedY: 0,
         };
     }
 
@@ -34,29 +34,29 @@ export class KeyboardHandler extends React.Component<
     }
 
     private handleKeyDown = ({ code }: KeyboardEvent) => {
-        const { fieldGridSize: deltaValue } = this.props;
-        const { deltaY, deltaX } = this.state;
+        const { gridSize } = this.props;
+        const { speedY, speedX } = this.state;
 
         switch (true) {
-            case code === KEY_CODES.ARROW_DOWN && deltaY === 0:
+            case code === KEY_CODES.ARROW_DOWN && speedY === 0:
                 return this.setState({
-                    deltaX: 0,
-                    deltaY: deltaValue,
+                    speedX: 0,
+                    speedY: gridSize,
                 });
-            case code === KEY_CODES.ARROW_LEFT && deltaX === 0:
+            case code === KEY_CODES.ARROW_LEFT && speedX === 0:
                 return this.setState({
-                    deltaX: -deltaValue,
-                    deltaY: 0,
+                    speedX: -gridSize,
+                    speedY: 0,
                 });
-            case code === KEY_CODES.ARROW_RIGHT && deltaX === 0:
+            case code === KEY_CODES.ARROW_RIGHT && speedX === 0:
                 return this.setState({
-                    deltaX: deltaValue,
-                    deltaY: 0,
+                    speedX: gridSize,
+                    speedY: 0,
                 });
-            case code === KEY_CODES.ARROW_UP && deltaY === 0:
+            case code === KEY_CODES.ARROW_UP && speedY === 0:
                 return this.setState({
-                    deltaX: 0,
-                    deltaY: -deltaValue,
+                    speedX: 0,
+                    speedY: -gridSize,
                 });
         }
     };

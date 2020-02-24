@@ -2,10 +2,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { Tabs } from 'antd';
-import { ErrorBoundary } from 'components/ErrorBoundary';
-import { GameTab } from 'components/GameTab';
-import { SettingsTab } from 'components/SettingsTab';
 import { gameActiveSelector } from 'store/selectors/game';
+import { ErrorBoundary } from 'components/ErrorBoundary';
+import { GameTab } from 'components/Page/components/GameTab';
+import { SettingsTab } from 'components/Page/components/SettingsTab';
 import './styles.css';
 
 const { TabPane } = Tabs;

@@ -17,9 +17,9 @@ const mapStateToProps = createSelector(
     defaultGridSizeSelector,
     ({ rows, columns, velocity }, active, fps, gridSize) => ({
         active,
-        fieldWidth: columns * gridSize,
+        gridSize,
         fieldHeigth: rows * gridSize,
-        fieldGridSize: gridSize,
+        fieldWidth: columns * gridSize,
         framesToSkipCount: Math.round(fps / velocity),
     }),
 );

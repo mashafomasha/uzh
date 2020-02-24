@@ -1,14 +1,14 @@
 import * as React from 'react';
-import { CanvasRenderer } from '../CanvasRenderer';
-import { FrameCalculator } from '../FrameCalculator';
-import { KeyboardHandler } from '../KeyboardHandler';
+import { CanvasRenderer } from './components/CanvasRenderer';
+import { FrameCalculator } from './components/FrameCalculator';
+import { KeyboardHandler } from './components/KeyboardHandler';
 
 type Props = {
     active: boolean;
 
+    gridSize: number;
     fieldWidth: number;
     fieldHeigth: number;
-    fieldGridSize: number;
 
     framesToSkipCount: number;
 

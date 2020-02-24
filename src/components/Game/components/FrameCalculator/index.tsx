@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Point } from 'types/point';
 
 type FrameState = {
-    applePoint: Point;
+    applePoints: Point[];
     snakePoints: Point[];
 
     currentFramesCount: number;
@@ -12,12 +12,12 @@ type FrameProps = {
     active: boolean;
     framesToSkipCount: number;
 
-    deltaX: number;
-    deltaY: number;
+    speedX: number;
+    speedY: number;
 
     fieldWidth: number;
     fieldHeigth: number;
-    fieldGridSize: number;
+    gridSize: number;
 
     onAppleEncounter: () => void;
     onObstacleEncounter: () => void;
@@ -35,7 +35,7 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
     }
 
     componentDidUpdate(prevProps: FrameProps) {
-        const { active, fieldGridSize, fieldHeigth, fieldWidth } = this.props;
+        const { active, gridSize, fieldHeigth, fieldWidth } = this.props;
 
         if (!prevProps.active && active) {
             this.reqAnimationFrameId = requestAnimationFrame(
@@ -46,6 +46,7 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
         if (prevProps.active && !active && this.reqAnimationFrameId) {
             cancelAnimationFrame(this.reqAnimationFrameId);
 
+            // после отмены игры ставим в очередь задачу сброса состояния
             setTimeout(() => {
                 this.setState(this.getBrandNewState());
             }, 0);
@@ -54,7 +55,7 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
         if (
             prevProps.fieldWidth !== fieldWidth ||
             prevProps.fieldHeigth !== fieldHeigth ||
-            prevProps.fieldGridSize !== fieldGridSize
+            prevProps.gridSize !== gridSize
         ) {
             this.setState(this.getBrandNewState());
         }
@@ -67,19 +68,15 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
     }
 
     private getBrandNewState = () => ({
-        applePoint: this.generateRandomPoint(),
+        applePoints: [this.generateRandomPoint()],
         snakePoints: [this.generateRandomPoint()],
 
         currentFramesCount: 0,
     });
 
     private requestAnimationFrame = () => {
-        const { currentFramesCount, snakePoints } = this.state;
-        const {
-            framesToSkipCount,
-            onAppleEncounter,
-            onObstacleEncounter,
-        } = this.props;
+        const { currentFramesCount } = this.state;
+        const { framesToSkipCount } = this.props;
 
         this.reqAnimationFrameId = requestAnimationFrame(
             this.requestAnimationFrame,
@@ -90,55 +87,76 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
             return;
         }
 
-        const position = this.calculatePosition();
-        const hasAppleEncounter = this.checkAppleEncounter(position);
-        const hasObstacleEncounter = this.checkObstacleEncounter(position);
-        const apple = this.generateAppleAtRandomPoint();
+        this.updateNewFramePositions();
+    };
 
+    private updateNewFramePositions = () => {
+        const { snakePoints, applePoints } = this.state;
+        const { onAppleEncounter, onObstacleEncounter } = this.props;
+
+        const newSnakeHeadPosition = this.calculateNewSnakeHeadPosition();
+
+        const hasAppleEncounter = this.checkObstacleEncounter(
+            newSnakeHeadPosition,
+            applePoints,
+        );
         if (hasAppleEncounter) {
             onAppleEncounter();
         }
 
-        if (hasObstacleEncounter || apple === null) {
+        const hasObstacleEncounter = this.checkObstacleEncounter(
+            newSnakeHeadPosition,
+            snakePoints,
+        );
+        if (hasObstacleEncounter) {
             onObstacleEncounter();
         }
 
-        this.setState({
-            currentFramesCount: 0,
-            snakePoints: [
-                position,
-                ...(hasAppleEncounter ? snakePoints : snakePoints.slice(0, -1)),
-            ],
-            ...(hasAppleEncounter ? { applePoint: apple! } : null),
-        });
+        try {
+            const newApple = this.generateRandomPointWithRetiries(snakePoints);
+            this.setState({
+                currentFramesCount: 0,
+                snakePoints: [
+                    newSnakeHeadPosition,
+                    ...(hasAppleEncounter
+                        ? snakePoints
+                        : snakePoints.slice(0, -1)),
+                ],
+                ...(hasAppleEncounter ? { applePoints: [newApple] } : null),
+            });
+        } catch {
+            // все клетки заняты сообщаем о проблеме и обнуляем состояние
+            onObstacleEncounter();
+            this.setState(this.getBrandNewState());
+        }
     };
 
-    private calculatePosition = (): Point => {
+    private calculateNewSnakeHeadPosition = (): Point => {
         const {
-            deltaX: frameDeltaX,
-            deltaY: frameDeltaY,
-            fieldGridSize,
+            speedX,
+            speedY,
+            gridSize,
             fieldWidth,
             fieldHeigth,
         } = this.props;
         const { snakePoints } = this.state;
         const [prevX, prevY] = snakePoints[0];
 
-        const currentX = this.calculateCoordinateWithWrap(
-            prevX + frameDeltaX,
-            fieldGridSize,
+        const currentX = this.calculateCoordinateWithScreenWrap(
+            prevX + speedX,
+            gridSize,
             fieldWidth,
         );
-        const currentY = this.calculateCoordinateWithWrap(
-            prevY + frameDeltaY,
-            fieldGridSize,
+        const currentY = this.calculateCoordinateWithScreenWrap(
+            prevY + speedY,
+            gridSize,
             fieldHeigth,
         );
 
         return [currentX, currentY];
     };
 
-    private calculateCoordinateWithWrap = (
+    private calculateCoordinateWithScreenWrap = (
         current: number,
         step: number,
         max: number,
@@ -155,15 +173,12 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
         return coordinate;
     };
 
-    private checkAppleEncounter = ([headX, headY]: Point) => {
-        const [appleX, appleY] = this.state.applePoint;
-        return appleX === headX && appleY === headY;
-    };
-
-    private checkObstacleEncounter = ([pointX, pointY]: Point) => {
-        const { snakePoints } = this.state;
+    private checkObstacleEncounter = (
+        [pointX, pointY]: Point,
+        pointsToCheck: Point[],
+    ) => {
         return Boolean(
-            snakePoints.find(
+            pointsToCheck.find(
                 ([cellX, cellY]) => cellX === pointX && cellY === pointY,
             ),
         );
@@ -173,33 +188,35 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
         Math.floor(Math.random() * (max - min)) + min;
 
     private generateRandomPoint = (): Point => {
-        const { fieldHeigth, fieldWidth, fieldGridSize } = this.props;
+        const { fieldHeigth, fieldWidth, gridSize } = this.props;
 
         const pointX =
-            this.getRandomInRange(0, fieldWidth / fieldGridSize) *
-            fieldGridSize;
+            this.getRandomInRange(0, fieldWidth / gridSize) * gridSize;
         const pointY =
-            this.getRandomInRange(0, fieldHeigth / fieldGridSize) *
-            fieldGridSize;
+            this.getRandomInRange(0, fieldHeigth / gridSize) * gridSize;
 
         return [pointX, pointY];
     };
 
-    private generateAppleAtRandomPoint = (
+    private generateRandomPointWithRetiries = (
+        occupiedPoints: Point[],
         retriesLeft: number = 3,
-    ): Point | null => {
+    ): Point => {
         if (retriesLeft > 0) {
             const point = this.generateRandomPoint();
-            const occupied = this.checkObstacleEncounter(point);
+            const occupied = this.checkObstacleEncounter(point, occupiedPoints);
 
             if (occupied) {
-                return this.generateAppleAtRandomPoint(retriesLeft - 1);
+                return this.generateRandomPointWithRetiries(
+                    occupiedPoints,
+                    retriesLeft - 1,
+                );
             }
 
             return point;
         }
 
-        return null;
+        throw new Error("can't generate random point");
     };
 
     render() {
