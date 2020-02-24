@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { Point } from 'types/point';
+import { Apple } from 'modules/Apple';
+import { Snake } from 'modules/Snake';
+import { Renderer } from 'modules/Renderer';
 
 type FrameState = {
-    applePoints: Point[];
-    snakePoints: Point[];
-
     currentFramesCount: number;
 };
 
@@ -18,46 +17,77 @@ type FrameProps = {
     fieldWidth: number;
     fieldHeigth: number;
     gridSize: number;
+    canvasRefObject: React.RefObject<HTMLCanvasElement | null>;
 
     onAppleEncounter: () => void;
     onObstacleEncounter: () => void;
-
-    children: (props: FrameState) => React.ReactNode;
 };
 
 export class FrameCalculator extends React.Component<FrameProps, FrameState> {
     private reqAnimationFrameId: number | undefined;
+    private apple: Apple;
+    private snake: Snake;
+    private renderer: Renderer;
 
     constructor(props: FrameProps) {
         super(props);
 
-        this.state = this.getBrandNewState();
+        this.apple = new Apple(props);
+        this.snake = new Snake(props);
+        this.renderer = new Renderer({
+            ...props,
+            renderElements: [this.apple, this.snake],
+        });
+
+        this.state = {
+            currentFramesCount: 0,
+        };
+    }
+
+    componentDidMount() {
+        this.renderElementsOnCanvas();
     }
 
     componentDidUpdate(prevProps: FrameProps) {
         const { active, gridSize, fieldHeigth, fieldWidth } = this.props;
 
+        // запустить игру
         if (!prevProps.active && active) {
             this.reqAnimationFrameId = requestAnimationFrame(
                 this.requestAnimationFrame,
             );
         }
 
+        // остановить игру
         if (prevProps.active && !active && this.reqAnimationFrameId) {
             cancelAnimationFrame(this.reqAnimationFrameId);
 
             // после отмены игры ставим в очередь задачу сброса состояния
             setTimeout(() => {
-                this.setState(this.getBrandNewState());
+                this.setState({
+                    currentFramesCount: 0,
+                });
             }, 0);
         }
 
+        // поменялись настройки
         if (
             prevProps.fieldWidth !== fieldWidth ||
             prevProps.fieldHeigth !== fieldHeigth ||
             prevProps.gridSize !== gridSize
         ) {
-            this.setState(this.getBrandNewState());
+            this.apple = new Apple(this.props);
+            this.snake = new Snake(this.props);
+            this.renderer = new Renderer({
+                ...this.props,
+                renderElements: [this.apple, this.snake],
+            });
+
+            this.renderElementsOnCanvas();
+
+            this.setState({
+                currentFramesCount: 0,
+            });
         }
     }
 
@@ -67,13 +97,6 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
         }
     }
 
-    private getBrandNewState = () => ({
-        applePoints: [this.generateRandomPoint()],
-        snakePoints: [this.generateRandomPoint()],
-
-        currentFramesCount: 0,
-    });
-
     private requestAnimationFrame = () => {
         const { currentFramesCount } = this.state;
         const { framesToSkipCount } = this.props;
@@ -82,144 +105,60 @@ export class FrameCalculator extends React.Component<FrameProps, FrameState> {
             this.requestAnimationFrame,
         );
 
+        // добавляем разреживание кадров в соответствии с заданой скоростью
         if (currentFramesCount < framesToSkipCount) {
             this.setState({ currentFramesCount: currentFramesCount + 1 });
             return;
         }
 
-        this.updateNewFramePositions();
+        this.updatePositions();
+        this.renderElementsOnCanvas();
     };
 
-    private updateNewFramePositions = () => {
-        const { snakePoints, applePoints } = this.state;
-        const { onAppleEncounter, onObstacleEncounter } = this.props;
-
-        const newSnakeHeadPosition = this.calculateNewSnakeHeadPosition();
-
-        const hasAppleEncounter = this.checkObstacleEncounter(
-            newSnakeHeadPosition,
-            applePoints,
-        );
-        if (hasAppleEncounter) {
-            onAppleEncounter();
-        }
-
-        const hasObstacleEncounter = this.checkObstacleEncounter(
-            newSnakeHeadPosition,
-            snakePoints,
-        );
-        if (hasObstacleEncounter) {
-            onObstacleEncounter();
-        }
-
-        try {
-            const newApple = this.generateRandomPointWithRetiries(snakePoints);
-            this.setState({
-                currentFramesCount: 0,
-                snakePoints: [
-                    newSnakeHeadPosition,
-                    ...(hasAppleEncounter
-                        ? snakePoints
-                        : snakePoints.slice(0, -1)),
-                ],
-                ...(hasAppleEncounter ? { applePoints: [newApple] } : null),
-            });
-        } catch {
-            // все клетки заняты сообщаем о проблеме и обнуляем состояние
-            onObstacleEncounter();
-            this.setState(this.getBrandNewState());
-        }
-    };
-
-    private calculateNewSnakeHeadPosition = (): Point => {
+    private updatePositions = () => {
         const {
+            onAppleEncounter,
+            onObstacleEncounter,
             speedX,
             speedY,
-            gridSize,
-            fieldWidth,
-            fieldHeigth,
         } = this.props;
-        const { snakePoints } = this.state;
-        const [prevX, prevY] = snakePoints[0];
 
-        const currentX = this.calculateCoordinateWithScreenWrap(
-            prevX + speedX,
-            gridSize,
-            fieldWidth,
-        );
-        const currentY = this.calculateCoordinateWithScreenWrap(
-            prevY + speedY,
-            gridSize,
-            fieldHeigth,
-        );
+        const prevSnakeLength = this.snake.points.length;
 
-        return [currentX, currentY];
-    };
+        try {
+            // если уж врезался сам в себя будет ошибка
+            this.snake.update({
+                speedX,
+                speedY,
+                occupiedPoints: this.apple.points.slice(),
+            });
 
-    private calculateCoordinateWithScreenWrap = (
-        current: number,
-        step: number,
-        max: number,
-        min: number = 0,
-    ) => {
-        let coordinate = current;
+            // уж съел яблоко
+            if (this.snake.points.length > prevSnakeLength) {
+                onAppleEncounter();
 
-        if (coordinate < min) {
-            coordinate = max - step;
-        } else if (coordinate >= max) {
-            coordinate = min;
-        }
-
-        return coordinate;
-    };
-
-    private checkObstacleEncounter = (
-        [pointX, pointY]: Point,
-        pointsToCheck: Point[],
-    ) => {
-        return Boolean(
-            pointsToCheck.find(
-                ([cellX, cellY]) => cellX === pointX && cellY === pointY,
-            ),
-        );
-    };
-
-    private getRandomInRange = (min: number, max: number) =>
-        Math.floor(Math.random() * (max - min)) + min;
-
-    private generateRandomPoint = (): Point => {
-        const { fieldHeigth, fieldWidth, gridSize } = this.props;
-
-        const pointX =
-            this.getRandomInRange(0, fieldWidth / gridSize) * gridSize;
-        const pointY =
-            this.getRandomInRange(0, fieldHeigth / gridSize) * gridSize;
-
-        return [pointX, pointY];
-    };
-
-    private generateRandomPointWithRetiries = (
-        occupiedPoints: Point[],
-        retriesLeft: number = 3,
-    ): Point => {
-        if (retriesLeft > 0) {
-            const point = this.generateRandomPoint();
-            const occupied = this.checkObstacleEncounter(point, occupiedPoints);
-
-            if (occupied) {
-                return this.generateRandomPointWithRetiries(
-                    occupiedPoints,
-                    retriesLeft - 1,
-                );
+                // если уж занимает всё пространство экрана будет ошибка
+                this.apple.update({
+                    speedX,
+                    speedY,
+                    occupiedPoints: this.snake.points.slice(),
+                });
             }
-
-            return point;
+        } catch {
+            // произошло столкновение или некуда добавить яблоко
+            onObstacleEncounter();
+        } finally {
+            this.setState({
+                currentFramesCount: 0,
+            });
         }
+    };
 
-        throw new Error("can't generate random point");
+    private renderElementsOnCanvas = () => {
+        this.renderer.render();
     };
 
     render() {
-        return this.props.children(this.state);
+        return this.props.children;
     }
 }

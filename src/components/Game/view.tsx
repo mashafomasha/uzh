@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { CanvasRenderer } from './components/CanvasRenderer';
 import { FrameCalculator } from './components/FrameCalculator';
 import { KeyboardHandler } from './components/KeyboardHandler';
+import './styles.css';
 
 type Props = {
     active: boolean;
@@ -17,13 +17,22 @@ type Props = {
 };
 
 export const View = (props: Props) => {
+    const canvasRefObject = React.useRef<HTMLCanvasElement | null>(null);
+
     return (
         <KeyboardHandler {...props}>
             {(handlerProps) => (
-                <FrameCalculator {...handlerProps} {...props}>
-                    {(frameProps) => (
-                        <CanvasRenderer {...frameProps} {...props} />
-                    )}
+                <FrameCalculator
+                    {...props}
+                    {...handlerProps}
+                    canvasRefObject={canvasRefObject}
+                >
+                    <canvas
+                        className="Canvas"
+                        width={props.fieldWidth}
+                        height={props.fieldHeigth}
+                        ref={canvasRefObject}
+                    ></canvas>
                 </FrameCalculator>
             )}
         </KeyboardHandler>
