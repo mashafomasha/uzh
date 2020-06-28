@@ -1,0 +1,10 @@
+language: generic
+sudo: required
+services:
+    - docker
+
+berfore_install:
+    - docker build -t fomasha/uzh -f Dockerfile.dev .
+
+script:
+    - docker run -e CI=true fomasha/uzh npm run test -- --coverage
