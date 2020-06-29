@@ -8,3 +8,16 @@ berfore_install:
 
 script:
     - docker run -e CI=true fomasha/uzh npm run test -- --coverage
+
+deploy:
+    provider: elasticbeanstalk
+    region: "us-east-2"
+    app: "uzh"
+    env: "Uzh-env"
+    bucket_name: "elasticbeanstalk-us-east-2-119915817733"
+    bucket_path: "uzh"
+    on:
+        branch: master
+
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
