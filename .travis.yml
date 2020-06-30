@@ -13,7 +13,7 @@ deploy:
     provider: elasticbeanstalk
     region: "us-east-2"
     app: "uzh"
-    env: "Uzh-env"
+    env: "Uzh-env-v2"
     bucket_name: "elasticbeanstalk-us-east-2-119915817733"
     bucket_path: "uzh"
     on:
